@@ -1,16 +1,16 @@
 version: 2.1
 
+orbs:
+  azure-cli: circleci/azure-cli@1.1.0
+
 jobs:
   build-push:
-    docker:
-      - image: circleci/python:3.6
-    working_directory:  ~/working
+    executor: azure-cli/default
     steps:
+      - azure-cli/install
+      - azure-cli/login-with-service-principal
       - checkout
       - setup_remote_docker
-      - run:
-          name: Install Dependencies
-          command: sudo pip install azure-cli
       - run:
           name: Build Docker image
           command: docker build -t sinatrasample.azurecr.io/sinatra-sample:$CIRCLE_SHA1 .
@@ -19,21 +19,15 @@ jobs:
           command: |
             docker login $ACR_REPOSITORY -u $ACR_LOGIN -p $ACR_PASSWORD
             docker push $ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1
-            az login --service-principal -u $AZURE_SP -p $AZURE_SP_PASSWORD --tenant $AZURE_SP_TENANT
             az webapp config container set -c "$ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1" -p $ACR_PASSWORD -r https://$ACR_REPOSITORY -u $ACR_LOGIN -n $AZURE_APP_NAME -s staging -g $AZURE_RESOURCE_GROUP
 
   swap:
-    docker:
-      - image: circleci/python:3.6
+    executor: azure-cli/azure-docker
     steps:
-      - checkout
-      - run:
-          name: Install Dependencies
-          command: sudo pip install azure-cli
+      - azure-cli/login-with-service-principal
       - run:
           name: Slot swap
           command: |
-            az login --service-principal -u $AZURE_SP -p $AZURE_SP_PASSWORD --tenant $AZURE_SP_TENANT
             az webapp deployment slot swap -g $AZURE_RESOURCE_GROUP -n $AZURE_APP_NAME --slot staging
 
 workflows:
