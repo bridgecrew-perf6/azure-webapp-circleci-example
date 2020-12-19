@@ -1,5 +1,5 @@
 require 'sinatra'
 
 get '/' do
-  'Hello, Azure!'
+  'Hello, Circle CI!'
 end
