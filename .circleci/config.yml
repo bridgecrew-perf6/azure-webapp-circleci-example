@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   azure-cli: circleci/azure-cli@1.1.0
+  slack: circleci/slack@4.1.4
 
 jobs:
   build-push:
@@ -35,10 +36,14 @@ workflows:
   deploy:
     jobs:
       - build-push
+      - slack/on-hold:
+        context: slack-secrets
+        requires:
+            - build-push
       - approval:
           type: approval
           requires:
-            - build-push
+            - slack/on-hold
       - swap:
           requires:
             - approval
