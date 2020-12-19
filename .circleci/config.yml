@@ -14,12 +14,12 @@ jobs:
       - run:
           name: Build Docker image
           command: docker build -t sinatrasample.azurecr.io/sinatra-sample:$CIRCLE_SHA1 .
-      - azure-cli/login-with-service-principal
       - run:
           name: Push Docker image
           command: |
             docker login $ACR_REPOSITORY -u $ACR_LOGIN -p $ACR_PASSWORD
             docker push $ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1
+            az login --service-principal -u $AZURE_SP -p $AZURE_SP_PASSWORD --tenant $AZURE_SP_TENANT
             az webapp config container set -c "$ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1" -p $ACR_PASSWORD -r https://$ACR_REPOSITORY -u $ACR_LOGIN -n $AZURE_APP_NAME -g $AZURE_RESOURCE_GROUP
 
 workflows:
