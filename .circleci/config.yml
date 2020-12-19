@@ -10,13 +10,18 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-        name: Build Docker image
-        command: |
-          docker build -t sinatrasample.azurecr.io/sinatra-sample:$CIRCLE_SHA1 .
+          name: Build Docker image
+          command: docker build -t sinatrasample.azurecr.io/sinatra-sample:$CIRCLE_SHA1 .
       - azure-cli/login-with-service-principal
       - run:
-        name: Push Docker image
-        command: |
-          docker login $ACR_REPOSITORY -u $ACR_LOGIN -p $ACR_PASSWORD
-          docker push $ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1
-          az webapp config container set -c "$ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1" -p $ACR_PASSWORD -r https://$ACR_REPOSITORY -u $ACR_LOGIN -n $AZURE_APP_NAME -g $AZURE_RESOURCE_GROUP
+          name: Push Docker image
+          command: |
+            docker login $ACR_REPOSITORY -u $ACR_LOGIN -p $ACR_PASSWORD
+            docker push $ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1
+            az webapp config container set -c "$ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1" -p $ACR_PASSWORD -r https://$ACR_REPOSITORY -u $ACR_LOGIN -n $AZURE_APP_NAME -g $AZURE_RESOURCE_GROUP
+
+workflows:
+  version: 2
+  build-push:
+    jobs:
+      - build-push
