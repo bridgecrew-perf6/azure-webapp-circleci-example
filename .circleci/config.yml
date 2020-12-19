@@ -37,7 +37,6 @@ workflows:
     jobs:
       - build-push
       - slack/on-hold:
-          context: slack-secrets
           requires:
             - build-push
       - approval:
