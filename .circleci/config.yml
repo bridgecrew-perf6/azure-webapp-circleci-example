@@ -41,7 +41,10 @@ workflows:
   deploy:
     jobs:
       - build-push
-      - swap:
+      - approval:
           type: approval
           requires:
             - build-push
+      - swap:
+          requires:
+            - approval
