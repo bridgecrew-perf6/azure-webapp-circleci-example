@@ -35,6 +35,10 @@ workflows:
   deploy:
     jobs:
       - build-push
+          filters:
+            branches:
+              only:
+                - main
       - slack/on-hold:
           requires:
             - build-push
