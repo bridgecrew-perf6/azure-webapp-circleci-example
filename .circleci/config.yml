@@ -1,13 +1,22 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-# Use a package of configuration called an orb.
+
 orbs:
-  # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.4.1
-# Orchestrate or schedule a set of jobs
-workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
-    jobs:
-      - welcome/run
+  azure-cli: circleci/azure-cli@1.1.0
+
+jobs:
+  build-push:
+    executor:  azure-cli/azure-docker
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+        name: Build Docker image
+        command: |
+          docker build -t sinatrasample.azurecr.io/sinatra-sample:$CIRCLE_SHA1 .
+      - azure-cli/login-with-service-principal
+      - run:
+        name: Push Docker image
+        command: |
+          docker login $ACR_REPOSITORY -u $ACR_LOGIN -p $ACR_PASSWORD
+          docker push $ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1
+          az webapp config container set -c "$ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1" -p $ACR_PASSWORD -r https://$ACR_REPOSITORY -u $ACR_LOGIN -n $AZURE_APP_NAME -g $AZURE_RESOURCE_GROUP
