@@ -22,22 +22,26 @@ jobs:
             az login --service-principal -u $AZURE_SP -p $AZURE_SP_PASSWORD --tenant $AZURE_SP_TENANT
             az webapp config container set -c "$ACR_REPOSITORY/sinatra-sample:$CIRCLE_SHA1" -p $ACR_PASSWORD -r https://$ACR_REPOSITORY -u $ACR_LOGIN -n $AZURE_APP_NAME -s staging -g $AZURE_RESOURCE_GROUP
 
-  # swap:
-  #   docker:
-  #     - image: circleci/python:3.6
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Install Dependencies
-  #         command: sudo pip install azure-cli
-  #     - run:
-  #         name: Slot swap
-  #         command: |
-  #           az login --service-principal -u $AZURE_SP -p $AZURE_SP_PASSWORD --tenant $AZURE_SP_TENANT
-  #           az webapp deployment slot swap -g $AZURE_RESOURCE_GROUP -n $AZURE_APP_NAME --slot staging
+  swap:
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: sudo pip install azure-cli
+      - run:
+          name: Slot swap
+          command: |
+            az login --service-principal -u $AZURE_SP -p $AZURE_SP_PASSWORD --tenant $AZURE_SP_TENANT
+            az webapp deployment slot swap -g $AZURE_RESOURCE_GROUP -n $AZURE_APP_NAME --slot staging
 
 workflows:
   version: 2
   deploy:
     jobs:
       - build-push
+    swap:
+      type: approval
+      requires:
+        - build-push
