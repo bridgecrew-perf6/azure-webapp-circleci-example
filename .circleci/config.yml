@@ -27,8 +27,7 @@ jobs:
       - azure-cli/login-with-service-principal
       - run:
           name: Slot swap
-          command: |
-            az webapp deployment slot swap -g $AZURE_RESOURCE_GROUP -n $AZURE_APP_NAME --slot staging
+          command: az webapp deployment slot swap -g $AZURE_RESOURCE_GROUP -n $AZURE_APP_NAME --slot staging
 
 workflows:
   version: 2
