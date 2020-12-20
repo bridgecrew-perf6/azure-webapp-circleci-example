@@ -45,7 +45,6 @@ workflows:
       - approval:
           type: approval
           requires:
-            - build-push
             - slack/on-hold
       - swap:
           requires:
